@@ -31,13 +31,7 @@ public class Main {
         System.out.println("Введи логин");
         String login = scanner.nextLine();
         User user = new ServiceDB().userSelect(login);
-        if (user != null) {
-            System.out.println("User: " + user);
-            System.out.println("Login: " + user.getLogin());
-            System.out.println("Password: " + user.getPassword());
-            System.out.println("Email: " + user.getEmail());
-            System.out.println("Date: " + user.getDate());
-        }
+        if (user != null) System.out.println("User: " + user);
         else System.out.println("Пользователь не найден.");
     }
 
@@ -49,6 +43,10 @@ public class Main {
         System.out.println("Введи email");
         String email = scanner.nextLine();
         User user = new User(login, password, email, new Date());
-        System.out.printf("Строк добавлено: %d\n", new ServiceDB().userInsert(user));
+        try {
+            System.out.printf("Строк добавлено: %d\n", new ServiceDB().userInsert(user));
+        } catch (SQLException error) {
+            System.out.println(error.getMessage());
+        }
     }
 }

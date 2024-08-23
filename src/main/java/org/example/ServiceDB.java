@@ -44,7 +44,7 @@ public class ServiceDB {
                     "SELECT password, email, date " +
                     "FROM users_credentials " +
                     "JOIN users_emails ON users_credentials.login = users_emails.login " +
-                    "WHERE users_credentials.login = '%s'", login
+                    "WHERE users_credentials.login = '%s';", login
             );
             resultSet = statement.executeQuery(query);
             resultSet.next();
@@ -52,7 +52,7 @@ public class ServiceDB {
             String email = resultSet.getString(2);
             Date date = resultSet.getDate(3);
             return new User(login, password, email, date);
-        } catch (SQLException error) {
+        } catch (SQLException | NullPointerException error) {
             return null;
         } finally {
             if (resultSet != null) resultSet.close();
@@ -61,23 +61,22 @@ public class ServiceDB {
         }
     }
 
-    public int userInsert(User user) {
+    public int userInsert(User user) throws SQLException {
         String query = (
-                "INSERT INTO users_credentials (login, password, date) VALUES (?, ?, ?); " +
+                "INSERT INTO users_credentials (login, password, date) VALUES (?, ?, NOW()); " +
                 "INSERT INTO users_emails (login, email) VALUES (?, ?);"
         );
         try (
                 Connection connection = getConnection();
                 PreparedStatement preparedStatement = connection.prepareStatement(query)
         ) {
-            preparedStatement.setString(1, user.getLogin());
-            preparedStatement.setString(2, user.getPassword());
-            preparedStatement.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
-            preparedStatement.setString(4, user.getLogin());
-            preparedStatement.setString(5, user.getEmail());
+            preparedStatement.setString(1, user.login());
+            preparedStatement.setString(2, user.password());
+            preparedStatement.setString(3, user.login());
+            preparedStatement.setString(4, user.email());
             return preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLException(e);
         }
     }
 }
